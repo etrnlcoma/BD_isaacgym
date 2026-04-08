@@ -41,6 +41,8 @@ from .humanoid.humanoid_vanilla import HumanoidVanilla
 from .humanoid.humanoid_vanilla_config import HumanoidVanillaCfg, HumanoidVanillaRunnerCfg
 from .humanoid.humanoid_controller import HumanoidController
 from .humanoid.humanoid_controller_config import HumanoidControllerCfg, HumanoidControllerRunnerCfg
+from .humanoid.bd_controller import BDController
+from .humanoid.bd_controller_config import BDControllerCfg, BDControllerRunnerCfg
 
 from gym.utils.task_registry import task_registry
 
@@ -49,5 +51,6 @@ task_registry.register("cartpole", Cartpole, CartpoleCfg, CartpoleRunnerCfg)
 
 task_registry.register("humanoid_vanilla", HumanoidVanilla, HumanoidVanillaCfg, HumanoidVanillaRunnerCfg)
 task_registry.register("humanoid_controller", HumanoidController, HumanoidControllerCfg, HumanoidControllerRunnerCfg)
+task_registry.register("bd_controller", BDController, BDControllerCfg, BDControllerRunnerCfg)
                       
 

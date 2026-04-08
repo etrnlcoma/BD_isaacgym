@@ -17,6 +17,7 @@ class ActorCritic(nn.Module):
                        normalize_obs=False,
                        **kwargs):
 
+        last_layer_gain = kwargs.pop("last_layer_gain", None)
         if kwargs:
             print("ActorCritic.__init__ got unexpected arguments, which will be ignored: " + str([key for key in kwargs.keys()]))
         super(ActorCritic, self).__init__()
@@ -26,7 +27,8 @@ class ActorCritic(nn.Module):
                            actor_hidden_dims,
                            activation,
                            init_noise_std,
-                           normalize_obs)
+                           normalize_obs,
+                           last_layer_gain=last_layer_gain)
 
         self.critic = Critic(num_critic_obs,
                              critic_hidden_dims,

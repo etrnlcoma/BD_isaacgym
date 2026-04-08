@@ -740,7 +740,9 @@ class LeggedRobot(BaseTask):
         self.dof_names = self.gym.get_asset_dof_names(robot_asset)
         self.dof_idx = {name: i for i, name in enumerate(self.dof_names)}
         self.num_bodies = len(body_names)
-        feet_names = [s for s in body_names if self.cfg.asset.foot_name in s]
+        # Use end_effectors list to determine feet IDs in the specified order
+        # (index 0 = right foot, index 1 = left foot by convention)
+        feet_names = list(self.cfg.asset.end_effectors)
         penalized_contact_names = []
         for name in self.cfg.asset.penalize_contacts_on:
             penalized_contact_names.extend([s for s in body_names if name in s])

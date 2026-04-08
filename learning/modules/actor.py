@@ -18,6 +18,7 @@ class Actor(nn.Module):
                  log_std_bounds=None,
                  actions_limits=None,
                  custom_initialization=False,
+                 last_layer_gain=None,
                  **kwargs):
 
         if kwargs:
@@ -51,6 +52,15 @@ class Actor(nn.Module):
         Normal.set_default_validate_args = False
         if custom_initialization:
             self.apply(weights_init_)
+
+        # Optionally reinitialize the last linear layer with a small gain so that
+        # the initial policy outputs near-zero actions (important for small robots
+        # where random Xavier outputs produce destabilising torques).
+        if last_layer_gain is not None:
+            last_linear = [m for m in self.mean_NN.modules()
+                           if isinstance(m, nn.Linear)][-1]
+            nn.init.orthogonal_(last_linear.weight, gain=last_layer_gain)
+            nn.init.constant_(last_linear.bias, 0.0)
 
     @property
     def action_mean(self):
