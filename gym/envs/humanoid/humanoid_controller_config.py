@@ -74,6 +74,7 @@ class HumanoidControllerCfg(LeggedRobotCfg):
             '07_left_hip_abad': 0.1,
             '08_left_hip_pitch': -0.667751,
             '09_left_knee': 1.4087,  # 0.6
+            # '10_left_ankle': -0.708876,
             '10_left_ankle': -0.708876,
         }
 

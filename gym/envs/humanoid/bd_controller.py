@@ -26,12 +26,14 @@ preserved: step_commands[:,0] = right step, step_commands[:,1] = left step,
 etc. Only the body-name lookups change.
 """
 
+
+import numpy as np
 import torch
 from isaacgym.torch_utils import quat_apply, quat_rotate_inverse
 from gym.envs.humanoid.humanoid_controller import HumanoidController
 from gym.envs.humanoid.bd_controller_config import BDControllerCfg
 from gym.utils.math import wrap_to_pi
-
+from gym.envs.base.legged_robot import LeggedRobot
 
 class BDController(HumanoidController):
     cfg: BDControllerCfg
@@ -63,7 +65,7 @@ class BDController(HumanoidController):
         # MIT Humanoid body names ('right_hip_yaw', etc.).
         # Call LeggedRobot._init_buffers() directly, then replicate all
         # HumanoidController buffer setup with BD-specific body names.
-        from gym.envs.base.legged_robot import LeggedRobot
+        
         LeggedRobot._init_buffers(self)
 
         # ---- Robot states (HumanoidController lines 42-54, BD names) ----
@@ -137,7 +139,7 @@ class BDController(HumanoidController):
         self.step_heading_offset = torch.zeros(
             self.num_envs, len(self.feet_ids),
             dtype=torch.float, device=self.device, requires_grad=False)
-        import numpy as np
+
         self.succeed_step_radius = torch.tensor(
             self.cfg.commands.succeed_step_radius,
             dtype=torch.float, device=self.device, requires_grad=False)
@@ -396,6 +398,28 @@ class BDController(HumanoidController):
 
         self.step_commands[self.update_commands_ids] = (
             update_step_commands_mask)
+
+    # ------------------------------------------------------------------ #
+    # Override foot collision correction to use BD-appropriate separation  #
+    # ------------------------------------------------------------------ #
+    def _adjust_foot_collision(self, collision_step_commands, collision_foot_on_motion):
+        """Place swing foot at _FOOT_COLLISION_THRESHOLD distance from support.
+
+        Parent hardcodes 0.2 m (MIT Humanoid hip width). BD hip width is
+        0.107 m, so we use _FOOT_COLLISION_THRESHOLD = 0.10 m instead.
+        """
+        collision_distance = (
+            collision_step_commands[:, 0] - collision_step_commands[:, 1]
+        ).norm(dim=1, keepdim=True)
+        adjust_step_commands = collision_step_commands.clone()
+        adjust_step_commands[collision_foot_on_motion] = (
+            collision_step_commands[~collision_foot_on_motion]
+            + self._FOOT_COLLISION_THRESHOLD
+            * (collision_step_commands[collision_foot_on_motion]
+               - collision_step_commands[~collision_foot_on_motion])
+            / collision_distance
+        )
+        return adjust_step_commands
 
     # ------------------------------------------------------------------ #
     # Override termination: use BD-appropriate height threshold            #

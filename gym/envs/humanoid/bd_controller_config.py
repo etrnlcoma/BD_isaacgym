@@ -48,7 +48,7 @@ class BDControllerCfg(LeggedRobotCfg):
 
     class env(LeggedRobotCfg.env):
         # num_envs = 4096
-        num_envs = 64
+        num_envs = 1024
         num_actuators = 10
         episode_length_s = 5
 
@@ -75,17 +75,30 @@ class BDControllerCfg(LeggedRobotCfg):
         # Right leg: axis -Y for hip-pitch/knee → positive = flexion (mirrored)
         # Left ankle:  axis -Y → positive = dorsiflexion
         # Right ankle: axis +Y → negative = dorsiflexion
+        # default_joint_angles = {
+        #     'J_L0':       0.0,     # left  hip yaw
+        #     'J_L1':       0.05,    # left  hip roll — slight abduction
+        #     'J_L2':       0.3,     # left  hip pitch — slight flexion (+Y axis)
+        #     'J_L3':      -0.6,     # left  knee — bent (+Y axis, negative = flex)
+        #     'J_L4_ankle': 0.3,     # left  ankle — dorsiflexion (-Y axis, positive = DF)
+        #     'J_R0':       0.0,     # right hip yaw
+        #     'J_R1':       0.05,    # right hip roll — slight abduction
+        #     'J_R2':      -0.3,     # right hip pitch — same flex (-Y axis, negative = flex)
+        #     'J_R3':       0.6,     # right knee — bent (-Y axis, positive = flex)
+        #     'J_R4_ankle': -0.3,    # right ankle — dorsiflexion (+Y axis, negative = DF)
+        # }
         default_joint_angles = {
-            'J_L0':       0.0,     # left  hip yaw
-            'J_L1':       0.05,    # left  hip roll — slight abduction
-            'J_L2':       0.3,     # left  hip pitch — slight flexion (+Y axis)
-            'J_L3':      -0.6,     # left  knee — bent (+Y axis, negative = flex)
-            'J_L4_ankle': 0.3,     # left  ankle — dorsiflexion (-Y axis, positive = DF)
-            'J_R0':       0.0,     # right hip yaw
-            'J_R1':       0.05,    # right hip roll — slight abduction
-            'J_R2':      -0.3,     # right hip pitch — same flex (-Y axis, negative = flex)
-            'J_R3':       0.6,     # right knee — bent (-Y axis, positive = flex)
-            'J_R4_ankle': -0.3,    # right ankle — dorsiflexion (+Y axis, negative = DF)
+            "J_L0":   0.0,
+            "J_L1":  0.08,
+            "J_L2":  0.56,
+            "J_L3":  -1.12,
+            "J_L4_ankle": -0.57,
+
+            "J_R0":   0.0,
+            "J_R1":  -0.08,
+            "J_R2":  -0.56,
+            "J_R3":  1.12,
+            "J_R4_ankle": 0.57
         }
 
         # Reset range for 'reset_to_range' mode — stays within joint limits
@@ -131,17 +144,29 @@ class BDControllerCfg(LeggedRobotCfg):
     class control(LeggedRobotCfg.control):
         # PD gains scaled from MIT Humanoid (Kp=30→~7, rounded to 10)
         # BD mass ratio: 8.42/37 ≈ 0.23, torque limits 12-20 Nm
+        # stiffness = {
+        #     'J_L0':       10.,   # hip yaw   (effort 12 Nm)
+        #     'J_L1':       15.,   # hip roll  (effort 20 Nm)
+        #     'J_L2':       15.,   # hip pitch (effort 20 Nm)
+        #     'J_L3':       20.,   # knee      (effort 20 Nm)
+        #     'J_L4_ankle': 10.,   # ankle     (effort 12 Nm)
+        #     'J_R0':       10.,
+        #     'J_R1':       15.,
+        #     'J_R2':       15.,
+        #     'J_R3':       20.,
+        #     'J_R4_ankle': 10.,
+        # }
         stiffness = {
-            'J_L0':       10.,   # hip yaw   (effort 12 Nm)
-            'J_L1':       15.,   # hip roll  (effort 20 Nm)
-            'J_L2':       15.,   # hip pitch (effort 20 Nm)
-            'J_L3':       20.,   # knee      (effort 20 Nm)
-            'J_L4_ankle': 10.,   # ankle     (effort 12 Nm)
-            'J_R0':       10.,
-            'J_R1':       15.,
-            'J_R2':       15.,
-            'J_R3':       20.,
-            'J_R4_ankle': 10.,
+            'J_L0':       25.,   # hip yaw   (effort 12 Nm)
+            'J_L1':       25.,   # hip roll  (effort 20 Nm)
+            'J_L2':       25.,   # hip pitch (effort 20 Nm)
+            'J_L3':       25.,   # knee      (effort 20 Nm)
+            'J_L4_ankle': 25.,   # ankle     (effort 12 Nm)
+            'J_R0':       25.,
+            'J_R1':       25.,
+            'J_R2':       25.,
+            'J_R3':       25.,
+            'J_R4_ankle': 2.,
         }
         damping = {
             'J_L0':       0.5,
@@ -177,8 +202,11 @@ class BDControllerCfg(LeggedRobotCfg):
         dstep_width  = 0.11         # nominal step width  [m]  ≈ hip width
 
         class ranges(LeggedRobotCfg.commands.ranges):
-            sample_period = [35, 36]        # gait frequency ≈ 2.9 Hz
-            dstep_width = [0.10, 0.12]      # [m]
+            # BD CoM height ~0.30m → w=5.72 → need T≈0.245s to match MIT T*w≈1.4
+            # MIT used 35 steps @ 0.01s=0.35s with w=3.88 → T*w=1.36
+            # BD:  24 steps @ 0.01s=0.24s with w=5.72 → T*w=1.37  ✓
+            sample_period = [23, 25]        # gait frequency ≈ 4.2 Hz
+            dstep_width = [0.08, 0.12]      # [m]
 
             lin_vel_x = [-1.0, 1.0]         # [m/s]
             lin_vel_y = 0.5                  # [m/s]
