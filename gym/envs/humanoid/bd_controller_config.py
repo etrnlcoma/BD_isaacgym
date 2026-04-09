@@ -206,7 +206,7 @@ class BDControllerCfg(LeggedRobotCfg):
             # MIT used 35 steps @ 0.01s=0.35s with w=3.88 → T*w=1.36
             # BD:  24 steps @ 0.01s=0.24s with w=5.72 → T*w=1.37  ✓
             sample_period = [23, 25]        # gait frequency ≈ 4.2 Hz
-            dstep_width = [0.08, 0.12]      # [m]
+            dstep_width = [0.23, 0.27]      # [m]
 
             lin_vel_x = [-1.0, 1.0]         # [m/s]
             lin_vel_y = 0.5                  # [m/s]
