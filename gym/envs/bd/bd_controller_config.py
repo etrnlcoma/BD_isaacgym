@@ -259,9 +259,6 @@ class BDControllerCfg(LeggedRobotCfg):
             0.001, 0.001, 0.002, 0.004, 0.001,    # RIGHT leg
         ]
 
-        # BD has no parallel ankle-knee linkage → disable Jacobian coupling
-        apply_humanoid_jacobian = False
-
     class rewards(LeggedRobotCfg.rewards):
         base_height_target = 0.30           # target standing height [m]
         soft_dof_pos_limit = 0.9
@@ -287,7 +284,7 @@ class BDControllerCfg(LeggedRobotCfg):
             # Floating base
             base_height        = 1.
             base_heading       = 3.
-            base_z_orientation = 1.
+            base_z_orientation = 3.
             tracking_lin_vel_world = 4.
 
             # Stepping
@@ -379,7 +376,7 @@ class BDControllerRunnerCfg(LeggedRobotRunnerCfg):
         policy_class_name    = 'ActorCritic'
         algorithm_class_name = 'PPO'
         num_steps_per_env    = 24
-        max_iterations       = 5000
+        max_iterations       = 3000
         run_name             = 'bd'
         experiment_name      = 'BD_Controller'
         save_interval        = 100
