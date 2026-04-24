@@ -1,5 +1,5 @@
-# ModelBasedFootstepPlanning-IROS2024
-This repository is an open-sourced code for the following paper presented at the 2024 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS).
+# BipeD
+This repository is an open-sourced code of RL training bipedal robot in Isaac Gym, based on ModelBasedFootstepPlanning-IROS2024
 
 #### Title: Integrating Model-Based Footstep Planning with Model-Free Reinforcement Learning for Dynamic Legged Locomotion <br/> 
 Paper Link: [https://ieeexplore.ieee.org/abstract/document/10801468](https://ieeexplore.ieee.org/abstract/document/10801468) <br/>
