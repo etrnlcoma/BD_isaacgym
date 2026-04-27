@@ -5,10 +5,10 @@ import numpy as np
 class LIPM3D:
     def __init__(self,
                  dt=0.001,
-                 T=1.0,
-                 T_d = 0.4,
-                 s_d = 0.5,
-                 w_d = 0.4,
+                 T=0.25,
+                 T_d = 0.25,
+                 s_d = 0.05,
+                 w_d = 0.25,
                  support_leg='left_leg'):
         self.dt = dt
         self.t = 0

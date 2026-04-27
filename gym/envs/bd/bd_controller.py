@@ -199,7 +199,11 @@ class BDController(BDRewards, BDVisualization, BDTerrainAdapter,
             self.command_ranges["dstep_width"][0],
             self.command_ranges["dstep_width"][1],
             (len(env_ids), 1), self.device)
-
+        self.dstep_length[env_ids] = torch_rand_float(
+            self.command_ranges["dstep_length"][0],
+            self.command_ranges["dstep_length"][1],
+            (len(env_ids), 1), self.device)
+        
     def _reset_system(self, env_ids):
         super()._reset_system(env_ids)
 

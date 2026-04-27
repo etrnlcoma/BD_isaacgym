@@ -48,9 +48,9 @@ class BDControllerCfg(LeggedRobotCfg):
 
     class env(LeggedRobotCfg.env):
         # num_envs = 4096
-        num_envs = 1024
+        num_envs = 4096
         num_actuators = 10
-        episode_length_s = 5
+        episode_length_s = 10
 
     class terrain(LeggedRobotCfg.terrain):
         curriculum = False
@@ -198,18 +198,20 @@ class BDControllerCfg(LeggedRobotCfg):
         sample_radius_offset = 0.05
 
         # BD step geometry: shorter stride due to smaller legs (~31 cm effective length)
-        dstep_length = 0.25         # nominal step length [m]
-        dstep_width  = 0.11         # nominal step width  [m]  ≈ hip width
+        dstep_length = 0.08      # nominal step length [m]
+        dstep_width  = 0.24         # nominal step width  [m]  ≈ hip width
 
         class ranges(LeggedRobotCfg.commands.ranges):
             # BD CoM height ~0.30m → w=5.72 → need T≈0.245s to match MIT T*w≈1.4
             # MIT used 35 steps @ 0.01s=0.35s with w=3.88 → T*w=1.36
             # BD:  24 steps @ 0.01s=0.24s with w=5.72 → T*w=1.37  ✓
-            sample_period = [23, 25]        # gait frequency ≈ 4.2 Hz
-            dstep_width = [0.23, 0.27]      # [m]
+            sample_period = [24, 26]        # gait frequency ≈ 4.2 Hz
+            dstep_width = [0.22, 0.26]      # [m]
+            dstep_length = [0.07, 0.09]
+            
 
-            lin_vel_x = [-1.0, 1.0]         # [m/s]
-            lin_vel_y = 0.5                  # [m/s]
+            lin_vel_x = [0.25, 0.35]         # [m/s]
+            lin_vel_y = 0.01                  # [m/s]
             yaw_vel   = 0.                   # [rad/s]
 
     class domain_rand(LeggedRobotCfg.domain_rand):
@@ -260,7 +262,7 @@ class BDControllerCfg(LeggedRobotCfg):
         ]
 
     class rewards(LeggedRobotCfg.rewards):
-        base_height_target = 0.30           # target standing height [m]
+        base_height_target = 0.28           # target standing height [m]
         soft_dof_pos_limit = 0.9
         soft_dof_vel_limit = 0.9
         soft_torque_limit = 0.8
@@ -282,10 +284,10 @@ class BDControllerCfg(LeggedRobotCfg):
             torque_limits   = 1e-2
 
             # Floating base
-            base_height        = 1.
-            base_heading       = 3.
+            base_height        = 2.
+            base_heading       = 4.
             base_z_orientation = 3.
-            tracking_lin_vel_world = 4.
+            tracking_lin_vel_world = 5.
 
             # Stepping
             joint_regularization = 1.
@@ -323,6 +325,20 @@ class BDControllerRunnerCfg(LeggedRobotRunnerCfg):
         # Observation vector: same 51-dim structure as MIT Humanoid
         # 1 + 3 + 1 + 3 + 3 + 4 + 4 + 4 + 4 + 3 + 1 + 1 + 10 + 10 = 51
         actor_obs = [
+            "base_heading",          # 1
+            "base_ang_vel",          # 3
+            "projected_gravity",     # 3
+            "foot_states_right",     # 4
+            "foot_states_left",      # 4
+            "step_commands_right",   # 4
+            "step_commands_left",    # 4
+            "commands",              # 3
+            "phase_sin",             # 1
+            "phase_cos",             # 1
+            "dof_pos",               # 10
+            "dof_vel",               # 10
+        ]
+        critic_obs = [
             "base_height",           # 1
             "base_lin_vel_world",    # 3
             "base_heading",          # 1
@@ -338,7 +354,6 @@ class BDControllerRunnerCfg(LeggedRobotRunnerCfg):
             "dof_pos",               # 10
             "dof_vel",               # 10
         ]
-        critic_obs = actor_obs
         actions = ["dof_pos_target"]
 
         class noise:
@@ -376,7 +391,7 @@ class BDControllerRunnerCfg(LeggedRobotRunnerCfg):
         policy_class_name    = 'ActorCritic'
         algorithm_class_name = 'PPO'
         num_steps_per_env    = 24
-        max_iterations       = 3000
+        max_iterations       = 5000
         run_name             = 'bd'
         experiment_name      = 'BD_Controller'
         save_interval        = 100
