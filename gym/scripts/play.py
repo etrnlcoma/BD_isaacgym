@@ -65,14 +65,22 @@ def play(args):
     env_cfg.commands.ranges.lin_vel_y = 0. # 0., 1.
     env_cfg.commands.ranges.yaw_vel = 0. # 0., 1.
 
-    if env_cfg.__class__.__name__ == 'HumanoidControllerCfg':
-        env_cfg.commands.adjust_step_command = False # True, False
-        env_cfg.commands.adjust_prob = 0.05
-        env_cfg.commands.sample_angle_offset = 20
-        env_cfg.commands.sample_radius_offset = 0.05 # 0.05
+    # if env_cfg.__class__.__name__ == 'HumanoidControllerCfg':
+    #     env_cfg.commands.adjust_step_command = False # True, False
+    #     env_cfg.commands.adjust_prob = 0.05
+    #     env_cfg.commands.sample_angle_offset = 20
+    #     env_cfg.commands.sample_radius_offset = 0.05 # 0.05
 
-        env_cfg.commands.ranges.sample_period = [35, 36] # [20, 21], [35, 36]
-        env_cfg.commands.ranges.dstep_width = [0.3, 0.3]
+    #     env_cfg.commands.ranges.sample_period = [35, 36] # [20, 21], [35, 36]
+    #     env_cfg.commands.ranges.dstep_width = [0.3, 0.3]
+
+    env_cfg.commands.adjust_step_command = False # True, False
+    env_cfg.commands.adjust_prob = 0.05
+    env_cfg.commands.sample_angle_offset = 20
+    env_cfg.commands.sample_radius_offset = 0.05 # 0.05
+
+    env_cfg.commands.ranges.sample_period = [24, 26] # [20, 21], [35, 36]
+    env_cfg.commands.ranges.dstep_width = [0.22, 0.26]
 
     # * prepare environment
     env, _ = task_registry.make_env(name=args.task, args=args, env_cfg=env_cfg)
@@ -203,7 +211,7 @@ if __name__ == '__main__':
     LIVE_PLOT = False # True, False
     RECORD_FRAMES = False # True, False
     SAVE_CSV = False # True, False
-    SAVE_DICT = False # True, False
+    SAVE_DICT = True # True, False
     CHECK_SUCCESS_RATE = False # True, False
     args = get_args()
 

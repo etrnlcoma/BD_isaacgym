@@ -198,7 +198,7 @@ class BDControllerCfg(LeggedRobotCfg):
         sample_radius_offset = 0.05
 
         # BD step geometry: shorter stride due to smaller legs (~31 cm effective length)
-        dstep_length = 0.08      # nominal step length [m]
+        dstep_length = 0.07        # nominal step length [m]
         dstep_width  = 0.24         # nominal step width  [m]  ≈ hip width
 
         class ranges(LeggedRobotCfg.commands.ranges):
@@ -207,10 +207,10 @@ class BDControllerCfg(LeggedRobotCfg):
             # BD:  24 steps @ 0.01s=0.24s with w=5.72 → T*w=1.37  ✓
             sample_period = [24, 26]        # gait frequency ≈ 4.2 Hz
             dstep_width = [0.22, 0.26]      # [m]
-            dstep_length = [0.07, 0.09]
+            dstep_length = [0.06, 0.08]
             
 
-            lin_vel_x = [0.25, 0.35]         # [m/s]
+            lin_vel_x = [0.2, 0.3]         # [m/s]
             lin_vel_y = 0.01                  # [m/s]
             yaw_vel   = 0.                   # [rad/s]
 
@@ -262,7 +262,7 @@ class BDControllerCfg(LeggedRobotCfg):
         ]
 
     class rewards(LeggedRobotCfg.rewards):
-        base_height_target = 0.28           # target standing height [m]
+        base_height_target = 0.2          # target standing height [m]
         soft_dof_pos_limit = 0.9
         soft_dof_vel_limit = 0.9
         soft_torque_limit = 0.8

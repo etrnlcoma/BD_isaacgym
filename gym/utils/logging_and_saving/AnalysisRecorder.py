@@ -369,7 +369,8 @@ class DictLogger():
         self.episode_length = 0
         self.data_dict = {'episode_length': self.episode_length}
 
-        self.potential_keys = ["root_states", "dof_pos", "dof_vel", "commands",
+        self.potential_keys = ["root_states", "dof_pos", "dof_vel", "torques", "actions", "commands",
+                               "contact_forces",
                                "foot_states", "foot_heading", "foot_contact", "phase", "current_step",
                                "step_commands", "CoM", "LIPM_CoM"]
         self.keys = []
