@@ -52,7 +52,7 @@ def play(args):
     env_cfg.terrain.mesh_type = 'plane' # 'plane', 'trimesh'
     env_cfg.terrain.terrain_kwargs = {'type': 'random_uniform'} # stepping_stones, random_uniform, gap
     env_cfg.terrain.measure_heights = False # True, False
-    env_cfg.domain_rand.randomize_friction = False
+    env_cfg.domain_rand.randomize_friction = True
     env_cfg.domain_rand.push_robots = False # True
     env_cfg.init_state.reset_mode = 'reset_to_basic' # 'reset_to_basic', 'reset_to_range'
     env_cfg.commands.resampling_time = -1 # -1, 3, 5, 15
@@ -61,7 +61,7 @@ def play(args):
     env_cfg.viewer.pos = [0, -2.5, .5] # [0, -3.5, 3]
     # env_cfg.viewer.lookat = [0, 0, 0] # [1, 1.5, 0]
     env_cfg.viewer.lookat = [0, 0.5, 0] # [1, 1.5, 0]
-    env_cfg.commands.ranges.lin_vel_x = [0., 0.] # [0., 0.], [-2., 2.]
+    env_cfg.commands.ranges.lin_vel_x = [0.2, 0.3] # [0., 0.], [-2., 2.]
     env_cfg.commands.ranges.lin_vel_y = 0. # 0., 1.
     env_cfg.commands.ranges.yaw_vel = 0. # 0., 1.
 
@@ -207,7 +207,7 @@ def play(args):
 if __name__ == '__main__':
     EXPORT_POLICY = True # True, False
     CUSTOM_COMMANDS = False # True, False
-    MOVE_CAMERA = True # True, False
+    MOVE_CAMERA = False # True, False
     LIVE_PLOT = False # True, False
     RECORD_FRAMES = False # True, False
     SAVE_CSV = False # True, False
