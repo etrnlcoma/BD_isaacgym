@@ -65,7 +65,7 @@ class BDControllerCfg(LeggedRobotCfg):
 
     class init_state(LeggedRobotCfg.init_state):
         reset_mode = 'reset_to_basic'
-        pos = [0., 0., 0.38]          # x,y,z [m] — box foot bottom at ~0.341 m; 4 mm clearance
+        pos = [0., 0., 0.32]          # x,y,z [m] — box foot bottom at ~0.341 m; 4 mm clearance
         rot = [0.0, 0.0, 0.0, 1.0]
         lin_vel = [0.0, 0.0, 0.0]
         ang_vel = [0.0, 0.0, 0.0]
@@ -207,10 +207,11 @@ class BDControllerCfg(LeggedRobotCfg):
             # BD:  24 steps @ 0.01s=0.24s with w=5.72 → T*w=1.37  ✓
             sample_period = [24, 26]        # gait frequency ≈ 4.2 Hz
             dstep_width = [0.22, 0.26]      # [m]
-            dstep_length = [0.06, 0.08]
-            
+            dstep_length = [0.04, 0.06]     # [m] — v_x derived as dstep_length / (step_period * dt)
+            base_height = [0.24, 0.32]      # [m] target base height range
 
-            lin_vel_x = [0.2, 0.3]         # [m/s]
+            # lin_vel_x is derived from gait params: v_x = dstep_length / (step_period * dt)
+            lin_vel_x = [0.15, 0.25]         # [m/s] (overridden by gait formula at runtime)
             lin_vel_y = 0.01                  # [m/s]
             yaw_vel   = 0.                   # [rad/s]
 
@@ -262,7 +263,7 @@ class BDControllerCfg(LeggedRobotCfg):
         ]
 
     class rewards(LeggedRobotCfg.rewards):
-        base_height_target = 0.2          # target standing height [m]
+        base_height_target = 0.28          # target standing height [m]
         soft_dof_pos_limit = 0.9
         soft_dof_vel_limit = 0.9
         soft_torque_limit = 0.8
@@ -284,8 +285,8 @@ class BDControllerCfg(LeggedRobotCfg):
             torque_limits   = 1e-2
 
             # Floating base
-            base_height        = 2.
-            base_heading       = 4.
+            base_height        = 4.
+            base_heading       = 3.
             base_z_orientation = 3.
             tracking_lin_vel_world = 5.
 
@@ -322,8 +323,8 @@ class BDControllerRunnerCfg(LeggedRobotRunnerCfg):
         normalize_obs = True
         last_layer_gain = 0.01         # scale last layer to near-zero initial actions
 
-        # Observation vector: same 51-dim structure as MIT Humanoid
-        # 1 + 3 + 1 + 3 + 3 + 4 + 4 + 4 + 4 + 3 + 1 + 1 + 10 + 10 = 51
+        # actor: 1+3+3+4+4+4+4+3+1+1+10+10 = 48
+        # critic: 1+3+1+3+3+4+4+4+4+3+1+1+10+10+1 = 53
         actor_obs = [
             "base_heading",          # 1
             "base_ang_vel",          # 3
@@ -339,7 +340,7 @@ class BDControllerRunnerCfg(LeggedRobotRunnerCfg):
             "dof_vel",               # 10
         ]
         critic_obs = [
-            "base_height",           # 1
+            "base_height",           # 1  — actual current height
             "base_lin_vel_world",    # 3
             "base_heading",          # 1
             "base_ang_vel",          # 3
@@ -353,6 +354,7 @@ class BDControllerRunnerCfg(LeggedRobotRunnerCfg):
             "phase_cos",             # 1
             "dof_pos",               # 10
             "dof_vel",               # 10
+            "target_base_height",    # 1  — commanded CoM height (critic only)
         ]
         actions = ["dof_pos_target"]
 
@@ -371,6 +373,7 @@ class BDControllerRunnerCfg(LeggedRobotRunnerCfg):
             dof_pos              = 0.05
             dof_vel              = 0.5
             foot_contact         = 0.1
+            target_base_height   = 0.0   # commanded value — no noise
 
     class algorithm(LeggedRobotRunnerCfg.algorithm):
         class PPO:

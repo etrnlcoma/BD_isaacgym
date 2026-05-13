@@ -24,8 +24,8 @@ from gym.utils.math import wrap_to_pi
 class BDRewards:
     # * Floating base rewards * #
     def _reward_base_height(self):
-        """Track specified standing height."""
-        error = (self.cfg.rewards.base_height_target - self.base_height).flatten()
+        """Track commanded standing height (per-env target_base_height)."""
+        error = (self.target_base_height - self.base_height).flatten()
         return self._negsqrd_exp(error)
 
     def _reward_base_heading(self):

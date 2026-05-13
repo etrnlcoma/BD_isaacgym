@@ -61,7 +61,7 @@ def play(args):
     env_cfg.viewer.pos = [0, -2.5, .5] # [0, -3.5, 3]
     # env_cfg.viewer.lookat = [0, 0, 0] # [1, 1.5, 0]
     env_cfg.viewer.lookat = [0, 0.5, 0] # [1, 1.5, 0]
-    env_cfg.commands.ranges.lin_vel_x = [0.2, 0.3] # [0., 0.], [-2., 2.]
+    # lin_vel_x is derived at runtime: v_x = dstep_length / (step_period * dt)
     env_cfg.commands.ranges.lin_vel_y = 0. # 0., 1.
     env_cfg.commands.ranges.yaw_vel = 0. # 0., 1.
 
@@ -79,11 +79,18 @@ def play(args):
     env_cfg.commands.sample_angle_offset = 20
     env_cfg.commands.sample_radius_offset = 0.05 # 0.05
 
-    env_cfg.commands.ranges.sample_period = [24, 26] # [20, 21], [35, 36]
-    env_cfg.commands.ranges.dstep_width = [0.22, 0.26]
+    env_cfg.commands.ranges.sample_period = [24, 26]    # [20, 21], [35, 36]
+    env_cfg.commands.ranges.dstep_width   = [0.22, 0.26]
+    env_cfg.commands.ranges.dstep_length  = [0.04, 0.06]  # v_x = dstep_length / (step_period * dt)
+    env_cfg.commands.ranges.base_height   = [0.28, 0.28]  # [m] target base height
 
     # * prepare environment
     env, _ = task_registry.make_env(name=args.task, args=args, env_cfg=env_cfg)
+
+    # * override initial joint angles (applied before the first env.reset() inside make_alg_runner)
+    if INIT_JOINT_ANGLES:
+        for i, name in enumerate(env.dof_names):
+            env.default_dof_pos[0, i] = INIT_JOINT_ANGLES[name]
 
     # * load policy
     train_cfg.runner.resume = True
@@ -126,6 +133,39 @@ def play(args):
 
     for i in range(max_it):
         actions = policy_runner.get_inference_actions()
+
+
+        actor_obs_list = policy_runner.policy_cfg["actor_obs"]
+        if 1 > 0:
+            # # actor_obs_list = policy_runner.policy_cfg["actor_obs"]
+            # action_list = policy_runner.policy_cfg["actions"]
+            # env._set_obs_variables()
+            # print("\n" + "="*60)
+            # print("OBSERVATIONS (robot 0, step 0):")
+            # for obs_name in actor_obs_list:
+            #     val = env.get_state(obs_name)[0]
+            #     print(f"  {obs_name}: {val.cpu().numpy()}")
+            # print("\nACTIONS (robot 0, step 0):")
+            # obs_idx = 0
+            # for act_name in action_list:
+            #     act_size = getattr(env, act_name).shape[1]
+            #     print(f"  {act_name}: {actions[0, obs_idx:obs_idx+act_size].cpu().numpy()}")
+            #     obs_idx += act_size
+            # print("\nDOF POSITIONS (robot 0, step 0):")
+            # dof_pos = env.dof_pos[0].cpu().numpy()
+            # for j, name in enumerate(env.dof_names):
+            #     print(f"  [{j:2d}] {name}: {dof_pos[j]:.4f} rad")
+            q = env.base_quat[0].cpu()  # (x, y, z, w)
+            qx, qy, qz, qw = q[0].item(), q[1].item(), q[2].item(), q[3].item()
+            # roll  = np.degrees(np.arctan2(2*(qw*qx + qy*qz), 1 - 2*(qx**2 + qy**2)))
+            # pitch = np.degrees(np.arcsin (np.clip(2*(qw*qy - qz*qx), -1.0, 1.0)))
+            # yaw   = np.degrees(np.arctan2(2*(qw*qz + qx*qy), 1 - 2*(qy**2 + qz**2)))
+            # print(f"\nBASE RPY (robot 0):  roll={roll:.2f}°  pitch={pitch:.2f}°  yaw={yaw:.2f}°")
+            # print("="*60 + "\n")
+
+            print(qx, qy, qz)
+
+
         policy_runner.set_actions(actions)
         env.step()
         policy_runner.reset_envs()
@@ -213,6 +253,20 @@ if __name__ == '__main__':
     SAVE_CSV = False # True, False
     SAVE_DICT = True # True, False
     CHECK_SUCCESS_RATE = False # True, False
+
+    # Initial joint angles override (set to {} or None to use config values)
+    INIT_JOINT_ANGLES = {
+        "J_L0":        0.0,
+        "J_L1":        0.08,
+        "J_L2":        0.56,
+        "J_L3":       -1.12,
+        "J_L4_ankle": -0.57,
+        "J_R0":        0.0,
+        "J_R1":       -0.08,
+        "J_R2":       -0.56,
+        "J_R3":        1.12,
+        "J_R4_ankle":  0.57,
+    }
     args = get_args()
 
     # # * custom loading

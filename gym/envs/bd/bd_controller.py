@@ -179,6 +179,9 @@ class BDController(BDRewards, BDVisualization, BDTerrainAdapter,
                                      device=self.device, requires_grad=False)
         self.contact_schedule = torch.zeros(self.num_envs, 1, dtype=torch.float,
                                             device=self.device, requires_grad=False)
+        self.target_base_height = torch.full(
+            (self.num_envs, 1), self.cfg.rewards.base_height_target,
+            dtype=torch.float, device=self.device, requires_grad=False)
 
     # ------------------------------------------------------------------ #
     # Reset / resample                                                     #
@@ -203,6 +206,17 @@ class BDController(BDRewards, BDVisualization, BDTerrainAdapter,
             self.command_ranges["dstep_length"][0],
             self.command_ranges["dstep_length"][1],
             (len(env_ids), 1), self.device)
+
+        # Sample target base height per episode
+        self.target_base_height[env_ids] = torch_rand_float(
+            self.command_ranges["base_height"][0],
+            self.command_ranges["base_height"][1],
+            (len(env_ids), 1), self.device)
+
+        # Derive forward velocity from gait formula: v_x = step_length * step_frequency
+        # step_frequency = 1 / (step_period * dt)  →  v_x = dstep_length / (step_period * dt)
+        v_x = self.dstep_length[env_ids] / (self.step_period[env_ids].float() * self.dt)
+        self.commands[env_ids, 0] = v_x.squeeze(1)
         
     def _reset_system(self, env_ids):
         super()._reset_system(env_ids)
@@ -238,6 +252,7 @@ class BDController(BDRewards, BDVisualization, BDTerrainAdapter,
         self.phase_count[env_ids] = 0
         self.update_phase_ids[env_ids] = False
         self.phase[env_ids] = 0
+        self.target_base_height[env_ids] = self.cfg.rewards.base_height_target
 
         # LIPM state (ICP, w, raibert_heuristic, dstep_length/width)
         self._reset_lipm_buffers(env_ids)
