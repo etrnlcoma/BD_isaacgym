@@ -187,6 +187,19 @@ class BDController(BDRewards, BDVisualization, BDTerrainAdapter,
     # Reset / resample                                                     #
     # ------------------------------------------------------------------ #
     def _resample_commands(self, env_ids):
+        """Resample gait commands at the start of each episode for the given envs.
+
+        Called by reset_envs() after _reset_system(). Overrides the parent to:
+          1. Sample step_period  — controls gait frequency (step_freq = 1 / (step_period * dt))
+          2. Sample dstep_width  — desired lateral foot placement width [m]
+          3. Sample dstep_length — desired forward foot placement length [m]
+          4. Sample target_base_height — per-episode CoM height target [m]
+          5. Derive commands[:, 0] (lin_vel_x) from the gait formula instead of
+             sampling it independently:  v_x = dstep_length / (step_period * dt)
+
+        This ensures that the velocity command is always consistent with the
+        actual step geometry the LIPM planner will execute.
+        """
         super()._resample_commands(env_ids)
 
         self.step_period[env_ids] = torch.randint(

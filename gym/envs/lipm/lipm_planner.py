@@ -100,10 +100,12 @@ class LIPMStepPlanner:
     def _calculate_ICP(self):
         """Instantaneous Capture Point.
 
-        x_ic = x + x'/w,  y_ic = y + y'/w,  w = sqrt(g / z_CoM).
+        x_ic = x + x'/w,  y_ic = y + y'/w,  w = sqrt(g / h_target).
+        Uses target_base_height instead of actual CoM height — assumes the
+        policy tracks the commanded height, making the planner sim2real-safe.
         """
         g = -self.sim_params.gravity.z
-        self.w = torch.sqrt(g / self.CoM[:, 2:3])
+        self.w = torch.sqrt(g / self.target_base_height)
         self.ICP[:, :2] = self.CoM[:, :2] + self.root_states[:, 7:9] / self.w
 
     def _update_LIPM_CoM(self, update_commands_ids):
@@ -112,7 +114,7 @@ class LIPMStepPlanner:
 
         T = self.dt
         g = -self.sim_params.gravity.z
-        w = torch.sqrt(g / self.LIPM_CoM[:, 2:3])
+        w = torch.sqrt(g / self.target_base_height)
 
         right_step_ids = torch.where(torch.where(self.foot_on_motion)[1] == 0)[0]
         left_step_ids = torch.where(torch.where(self.foot_on_motion)[1] == 1)[0]
@@ -141,7 +143,7 @@ class LIPMStepPlanner:
         p_symmetry = 0.5 * t_stance * v + k * (v - v_cmd),   k = sqrt(h / g)
         """
         g = -self.sim_params.gravity.z
-        k = torch.sqrt(self.CoM[:, 2:3] / g)
+        k = torch.sqrt(self.target_base_height / g)
         p_symmetry = (
             0.5 * self.step_stance * self.dt * self.base_lin_vel_world[:, :2]
             + k * (self.base_lin_vel_world[:, :2] - self.commands[:, :2]))
@@ -176,7 +178,7 @@ class LIPMStepPlanner:
         T = (step_period - update_count.unsqueeze(1)) * self.dt
 
         g = -self.sim_params.gravity.z
-        k = torch.sqrt(self.CoM[:, 2:3] / g)
+        k = torch.sqrt(self.target_base_height / g)
         p_symmetry = (
             0.5 * T * self.base_lin_vel_world[:, :2]
             + k * (self.base_lin_vel_world[:, :2] - self.commands[:, :2]))
