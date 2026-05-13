@@ -207,13 +207,10 @@ class BDControllerCfg(LeggedRobotCfg):
             # BD:  24 steps @ 0.01s=0.24s with w=5.72 → T*w=1.37  ✓
             sample_period = [24, 26]        # gait frequency ≈ 4.2 Hz
             dstep_width = [0.22, 0.26]      # [m]
-            dstep_length = [0.04, 0.06]     # [m] — v_x derived as dstep_length / (step_period * dt)
+            dstep_length = [0.04, 0.06]     # [m] — v_x = dstep_length / (step_period * dt)
             base_height = [0.24, 0.32]      # [m] target base height range
-
-            # lin_vel_x is derived from gait params: v_x = dstep_length / (step_period * dt)
-            lin_vel_x = [0.15, 0.25]         # [m/s] (overridden by gait formula at runtime)
-            lin_vel_y = 0.01                  # [m/s]
-            yaw_vel   = 0.                   # [rad/s]
+            lin_vel_y = 0.01                # [m/s]
+            yaw_vel   = 0.                  # [rad/s]
 
     class domain_rand(LeggedRobotCfg.domain_rand):
         randomize_friction = True
@@ -323,7 +320,7 @@ class BDControllerRunnerCfg(LeggedRobotRunnerCfg):
         normalize_obs = True
         last_layer_gain = 0.01         # scale last layer to near-zero initial actions
 
-        # actor: 1+3+3+4+4+4+4+3+1+1+10+10 = 48
+        # actor: 1+3+3+4+4+4+4+3+1+1+10+10+1 = 49
         # critic: 1+3+1+3+3+4+4+4+4+3+1+1+10+10+1 = 53
         actor_obs = [
             "base_heading",          # 1
@@ -338,6 +335,7 @@ class BDControllerRunnerCfg(LeggedRobotRunnerCfg):
             "phase_cos",             # 1
             "dof_pos",               # 10
             "dof_vel",               # 10
+            "target_base_height",    # 1  — commanded CoM height (задаётся оператором, не измеряется)
         ]
         critic_obs = [
             "base_height",           # 1  — actual current height
